@@ -1,0 +1,25 @@
+version: '3.1'
+
+services:
+  # Основной сервис (контент фабрика)
+  contentfactory:
+    build: .
+    container_name: contentfactory_main
+    volumes:
+      - './volumes/data:/app/data'
+      - './volumes/logs:/app/logs'
+    restart: always
+
+  # Сервис админки
+  admin:
+    build: .
+    container_name: contentfactory_admin
+    command: gunicorn --bind 0.0.0.0:8080 admin:app
+    ports:
+      - "8080:8080"
+    volumes:
+      - './volumes/data:/app/data'
+      - './volumes/logs:/app/logs'
+    restart: always
+    depends_on:
+      - contentfactory
