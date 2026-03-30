@@ -28,6 +28,8 @@ def is_valid_content(
 
 
 def is_url(string):
+    if not isinstance(string, str):
+        return False
     regex = r'^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$'
     return re.match(regex, string) is not None
 

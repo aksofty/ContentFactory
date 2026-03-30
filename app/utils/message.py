@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Any, List, Optional
 from loguru import logger
 from app.utils.gen_api_utils import gen_api_send
 
 @dataclass
 class Message:
     text: str
-    enclosures: List[str] = None
+    enclosures: List[Any] = None
     id: Optional[int|str] = None
 
     prompt: Optional[str] = None

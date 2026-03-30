@@ -18,7 +18,7 @@ class SourceRssView(BaseView):
     datamodel = SQLAInterface(SourceRss) 
     list_columns = BaseView.list_columns + ['is_active']
     add_columns = edit_columns = [
-        'is_active', 'name', 'url', 'cron', 'parse_link', 'allowed_filter', 'forbidden_filter', 'ai_prompt', 'reverse', 'last_post_url'
+        'is_active', 'name', 'url', 'cron', 'parse_link', 'limit', 'allowed_filter', 'forbidden_filter', 'ai_prompt', 'reverse', 'last_post_url'
     ]
 
     
@@ -26,7 +26,7 @@ class SourceTgView(BaseView):
     datamodel = SQLAInterface(SourceTg) 
     list_columns = ['is_active'] + BaseView.list_columns
     add_columns = edit_columns = [
-        'is_active', 'name', 'channel', 'cron', 'repost', 'drop_author', 'allowed_filter', 'forbidden_filter', 'ai_prompt', 'last_message_id'
+        'is_active', 'name', 'channel', 'cron', 'repost', 'drop_author', 'limit', 'allowed_filter', 'forbidden_filter', 'ai_prompt', 'last_message_id'
     ]
 
 

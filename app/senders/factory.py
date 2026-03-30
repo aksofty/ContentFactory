@@ -6,6 +6,6 @@ class SenderFactory:
         
     def get_sender(self, target):
         if target.type == 'tg':
-            return SenderTg(target, self.tg_client)
+            return SenderTg(target.id, self.tg_client)
         
         raise ValueError(f"Неизвестный тип: {target.type}")

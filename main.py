@@ -8,7 +8,7 @@ from app.config import Config
 from app.cruds.source_cruds import get_source, get_source_list
 from app.database import AsyncSessionLocal, engine
 from app.models.base import Base
-from app.utils.scheduler_utils import sync_jobs
+from app.utils.scheduler_utils import add_all_jobs
 from app.utils.tg_utils import tg_auth_qr
 
 logger.remove()
@@ -33,19 +33,19 @@ async def main():
     await tg_auth_qr(client, True)
     logger.info(f"Авторизация в Телеграм прошла успешно!")
 
-    async with AsyncSessionLocal() as session:  
-        scheduler = AsyncIOScheduler()
-        await sync_jobs(scheduler, session, client, Config.GEN_API_KEY)
-        scheduler.start()
+     
+    scheduler = AsyncIOScheduler()
+    await add_all_jobs(scheduler, client, Config.GEN_API_KEY)
+    scheduler.start()
 
-        try:
-            await client.run_until_disconnected()
-        except (KeyboardInterrupt, SystemExit):
-            logger.warning("Получен сигнал остановки")
-        finally:
-            scheduler.shutdown()
-            await client.disconnect()
-            logger.info("Сервис остановлен!")
+    try:
+        await client.run_until_disconnected()
+    except (KeyboardInterrupt, SystemExit):
+        logger.warning("Получен сигнал остановки")
+    finally:
+        scheduler.shutdown()
+        await client.disconnect()
+        logger.info("Сервис остановлен!")
 
 
 if __name__ == '__main__':
