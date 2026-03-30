@@ -1,6 +1,5 @@
 import json
 from typing import Optional
-
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 from app.utils.common_utils import get_rss_tags, make_text_message
@@ -12,20 +11,21 @@ from . import Loader
 class LoaderRss(Loader):
     data: Optional[list] = []
 
+
     def __init__(self, source, session, gen_api_token):
         self.source = source
         self.session = session
         self.gen_api_token = gen_api_token
 
+
     async def load(self):
+        new_posts = []
         async for post in get_new_rss_posts(self.source):
             try:
                 body = ""
                 enclosures = []
-
                 # Обновляем последний урл в БД
                 await self.update_last_post_url(post.link)
-
 
                 if self.source.parse_link:
                     # Парсим детальную страницу статьи
@@ -51,13 +51,17 @@ class LoaderRss(Loader):
                     msg = await Message.create(text, enclosures=enclosures, id=post.link)
 
                 if msg:
-                    self.data.append(msg)
+                    new_posts.append(msg)
 
             except Exception as e:
                 logger.error(f"[RSS] Произошла ошибка при загрузке: {e}") 
-                continue    
+                continue   
 
-        logger.info(f"[RSS] Все записи обработаты из {self.source.url}")
+        self.data = new_posts
+        if self.data:
+            logger.info(f"[RSS] Новые записи из {self.source.url} обработаны")
+        else:
+            logger.info(f"[RSS] Новых записей нет в {self.source.url}")
 
 
     async def update_last_post_url(self, last_post_link):

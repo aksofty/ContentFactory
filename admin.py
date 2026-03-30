@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
 app.config['SECRET_KEY'] = Config.ADMIN_SECRET
 app.config['CSRF_ENABLED'] = True
-app.config['APP_NAME'] = "TeleReposter"
+app.config['APP_NAME'] = "ContentFactory"
 
 db = SQLAlchemy(app)
 

@@ -2,16 +2,13 @@ import asyncio
 from datetime import datetime
 from loguru import logger
 from telethon import TelegramClient
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app import LOG_PATH
 from app.config import Config
-from app.cruds.source_cruds import get_source
+from app.cruds.source_cruds import get_source, get_source_list
 from app.database import AsyncSessionLocal, engine
 from app.models.base import Base
-from app.senders.factory import SenderFactory
-from app.loaders.factory import LoaderFactory
-from app.services.notification import NotificationService
-from app.utils.common_utils import is_url
-from app.utils.rss_utils import get_new_rss_posts
+from app.utils.scheduler_utils import sync_jobs
 from app.utils.tg_utils import tg_auth_qr
 
 logger.remove()
@@ -22,6 +19,7 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         logger.info(f"Связь с БД установлена")
+
 
 
 async def main():
@@ -36,17 +34,19 @@ async def main():
     logger.info(f"Авторизация в Телеграм прошла успешно!")
 
     async with AsyncSessionLocal() as session:  
-        source = await get_source(session, 2)
-        if source:
-            loader_factory = LoaderFactory(session=session, tg_client=client, gen_api_token=Config.GEN_API_KEY)
-            loader = loader_factory.get_loader(source)
-            await loader.load()
+        scheduler = AsyncIOScheduler()
+        await sync_jobs(scheduler, session, client, Config.GEN_API_KEY)
+        scheduler.start()
 
-            if loader.data:
-                sender_factory = SenderFactory(tg_client=client)
-                service = NotificationService(session=session, sender_factory=sender_factory, source=source)
-                for message in loader.data:
-                    await service.send_message_to_subcribers(message)
+        try:
+            await client.run_until_disconnected()
+        except (KeyboardInterrupt, SystemExit):
+            logger.warning("Получен сигнал остановки")
+        finally:
+            scheduler.shutdown()
+            await client.disconnect()
+            logger.info("Сервис остановлен!")
+
 
 if __name__ == '__main__':
     try:
