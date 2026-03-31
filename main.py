@@ -35,7 +35,8 @@ async def main():
 
      
     scheduler = AsyncIOScheduler()
-    await add_all_jobs(scheduler, client, Config.GEN_API_KEY)
+    await add_all_jobs(
+        scheduler, client, Config.GEN_API_KEY, Config.VK_TOKEN)
     scheduler.start()
 
     try:

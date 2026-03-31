@@ -1,0 +1,45 @@
+{% extends "appbuilder/general/model/edit.html" %}
+
+{% block tail_js %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var $mainArea = $('#keywords');
+            $mainArea.hide();
+
+            var $container = $('<div id="tags-container" style="margin-bottom: 10px;"></div>');
+            $mainArea.after($container);
+
+            var $addBtn = $('<button type="button" class="btn btn-sm btn-default">+ Тег</button>');
+            $container.after($addBtn);
+
+            function updateMainArea() {
+                var tags = [];
+                $('.tag-input').each(function() {
+                    var val = $(this).val().trim();
+                    if (val) tags.push(val);
+                });
+                $mainArea.val(tags.join(', '));
+            }
+
+            function addTagInput(value) {
+                var $wrapper = $('<div style="display:flex; margin-bottom:5px;"></div>');
+                var $input = $('<input type="text" class="form-control tag-input" style="width:200px; margin-right:5px;">').val(value || '');
+                var $delBtn = $('<button type="button" class="btn btn-danger btn-sm">×</button>');
+
+                $delBtn.click(function() { $wrapper.remove(); updateMainArea(); });
+                $input.on('input', updateMainArea);
+
+                $wrapper.append($input).append($delBtn);
+                $container.append($wrapper);
+            }
+
+            var currentTags = $mainArea.val().split(',');
+            currentTags.forEach(function(tag) {
+                if (tag.trim()) addTagInput(tag.trim());
+            });
+
+            $addBtn.click(function() { addTagInput(''); });
+        });
+    </script>
+{% endblock %}

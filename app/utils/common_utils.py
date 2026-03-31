@@ -8,6 +8,8 @@ def is_valid_content(
     if not text:
         return False
     
+    print(allowed_str)
+    
     text_lower = text.lower()
 
     def prepare_list(s: str|None) -> list[str]:
@@ -21,6 +23,7 @@ def is_valid_content(
             return False
         
     allowed = prepare_list(allowed_str)
+    print(allowed)
     if allowed:
         return any(word in text_lower for word in allowed)
 

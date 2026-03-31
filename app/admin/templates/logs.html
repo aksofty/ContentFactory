@@ -1,0 +1,76 @@
+{% extends "appbuilder/base.html" %}
+{% block content %}
+    <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <h2>Логи постинга</h2>
+        
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <label style="cursor: pointer; user-select: none; display: flex; align-items: center; gap: 5px; margin: 0;">
+                <input type="checkbox" id="auto-update-check" checked style="cursor: pointer;">
+                <span>Автообновление</span>
+            </label>
+
+            <div style="background: #333; color: #fff; padding: 5px 15px; border-radius: 20px; font-family: monospace; min-width: 140px; text-align: center;">
+                Обновление через: <span id="timer">5</span> сек.
+            </div>
+        </div>
+    </div>
+
+    <pre id="log-content" style="white-space: pre-wrap; background: #1e1e1e; color: #dcdcdc; padding: 20px; height: 600px; overflow-y: auto; border-radius: 5px;">
+        {{ content }}
+    </pre>
+
+    <script>
+        const updateInterval = 5; 
+        let timeLeft = updateInterval;
+        const autoUpdateCheck = document.getElementById('auto-update-check');
+        const timerDisplay = document.getElementById('timer');
+
+        function updateLogs() {
+            // Формируем URL без дублирования параметров
+            const url = new URL(window.location.href);
+            url.searchParams.set('raw', '1');
+
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    const logBlock = document.getElementById('log-content');
+                    logBlock.textContent = data.trim();
+                    logBlock.scrollTop = logBlock.scrollHeight;
+                    
+                    timeLeft = updateInterval;
+                    timerDisplay.textContent = timeLeft;
+                })
+                .catch(err => console.error('Ошибка загрузки логов:', err));
+        }
+
+        // Логика таймера
+        setInterval(() => {
+            // Если галочка НЕ стоит, ничего не делаем
+            if (!autoUpdateCheck.checked) {
+                timerDisplay.textContent = "--";
+                return;
+            }
+
+            timeLeft--;
+            if (timeLeft <= 0) {
+                timerDisplay.textContent = "...";
+                updateLogs();
+            } else {
+                timerDisplay.textContent = timeLeft;
+            }
+        }, 1000);
+
+        // Сброс таймера при включении галочки вручную
+        autoUpdateCheck.addEventListener('change', () => {
+            if (autoUpdateCheck.checked) {
+                timeLeft = updateInterval;
+                timerDisplay.textContent = timeLeft;
+            }
+        });
+
+        window.onload = () => {
+            const logBlock = document.getElementById('log-content');
+            logBlock.scrollTop = logBlock.scrollHeight;
+        };
+    </script>
+{% endblock %}

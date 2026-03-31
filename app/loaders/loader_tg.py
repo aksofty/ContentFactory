@@ -20,30 +20,14 @@ class LoaderTg(Loader):
             
             new_posts = []
             logger.info(f"! Загружаем записи из {source.channel}")
+
             try:
                 async for message in self._get_messages(source, limit=30):
-                    message_ids = [message.id]
-                    message_media = []
-
-                    if message.media:
-                        message_media.append(message.media)
-
-                    if message.grouped_id:
-                        logger.info(f"[TG] Сообщение №{message.id} - часть группы {message.grouped_id}. Собираю список...")
-                        async for g_message in self._get_all_messages_from_group(source, message.id, message.grouped_id):
-                            message_ids.append(g_message.id)
-                            print(f"{message.id} - {g_message.id}")
-                            if g_message.media:
-                                message_media.append(g_message.media)
-
-                    msg = await Message.create(message.text, enclosures=message_media, id=max(message_ids))
-                    new_posts.append(msg)
-
+                    msg = await self._make_message(message, source)
+                    if msg:
+                        new_posts.append(msg)
             except Exception as e:
                 logger.error(f"[TG] Произошла ошибка при загрузке: {e}")  
-
-            #for p in new_posts:
-                #print(p)
 
             self.data = new_posts[:source.limit]
             if self.data:
@@ -52,6 +36,21 @@ class LoaderTg(Loader):
             else:
                 logger.info(f"[TG] Новых записей нет в {source.channel}")
 
+    async def _make_message(self, message, source):
+        message_ids = [message.id]
+        message_media = []
+        if message.media:
+            message_media.append(message.media)
+            if message.grouped_id:
+                logger.info(f"[TG] Сообщение №{message.id} - часть группы {message.grouped_id}. Собираю список...")
+                async for g_message in self._get_all_messages_from_group(source, message.id, message.grouped_id):
+                    message_ids.append(g_message.id)
+                    if g_message.media:
+                        message_media.append(g_message.media)
+            msg = await Message.create(
+                message.text, enclosures=message_media, id=max(message_ids), source=source, gen_api_token=self.gen_api_token)
+            return msg
+        return None
  
     async def _get_messages(self, source, limit: int=10):
         """Получает поток сообщений из источника, фильтруя технические и пустые сообщения."""
@@ -72,15 +71,14 @@ class LoaderTg(Loader):
                 yield message
 
 
-    async def _get_all_messages_from_group(self, source, first_id, group_id, limit: int = 20):  
+    async def _get_all_messages_from_group(self, source, first_id, group_id, limit: int = 10):  
         """Ищет все сообщения, принадлежащие одной группе (альбому).""" 
-        async for message in self.client.iter_messages(source.channel, min_id=first_id-10, limit=limit):
-            if message.grouped_id and message.grouped_id == group_id:
+        async for message in self.client.iter_messages(source.channel, min_id=first_id, limit=limit, reverse=True):
+            if message.grouped_id == group_id:
                 yield message 
 
 
     async def _update_last_message_id(self, session, source, last_message_id):
-        pass
         try:
             logger.debug(f"Обновление ID последнего сообщения для источника ID {self.source_id}: {last_message_id}")
             source.last_message_id = last_message_id
@@ -88,7 +86,6 @@ class LoaderTg(Loader):
             #await session.refresh(self.source)
             logger.info(f"Успешно обновлен ID последнего сообщения для TG-источника '{source.name}' (ID: {last_message_id})")
             return True
-
         except Exception as e:
             await session.rollback()
             logger.exception(f"Непредвиденная ошибка при работе с источником ID {self.source_id}: {str(e)}")

@@ -24,18 +24,18 @@ def is_trigger_equal_cron(trigger, cron_string):
 
     return cron_parts == trigger_parts
 
-async def load_and_send(source, client, gen_api_token):
+async def load_and_send(source, client, gen_api_token, vk_token):
     loader_factory = LoaderFactory(tg_client=client, gen_api_token=gen_api_token)
     loader = loader_factory.get_loader(source)
     await loader.load()
     if loader.data:
-        sender_factory = SenderFactory(tg_client=client)
+        sender_factory = SenderFactory(tg_client=client, vk_token=vk_token)
         service = NotificationService(sender_factory=sender_factory, source=source)
         for message in loader.data:
             #print(message.text)
             await service.send_message_to_subcribers(message)
 
-async def add_job(scheduler, source, client, gen_api_token):
+async def add_job(scheduler, source, client, gen_api_token, vk_token):
     job_id = jobId(source)
     try:
         scheduler.add_job(
@@ -44,7 +44,8 @@ async def add_job(scheduler, source, client, gen_api_token):
             args=[
                 source,
                 client,
-                gen_api_token
+                gen_api_token,
+                vk_token
             ],
             id=job_id,
             replace_existing=True
@@ -57,11 +58,11 @@ async def add_job(scheduler, source, client, gen_api_token):
 
 
 
-async def add_all_jobs(scheduler, client, gen_api_token):
+async def add_all_jobs(scheduler, client, gen_api_token, vk_token):
     async with AsyncSessionLocal() as session:  
         sources = await get_source_list(session, is_active=True)
         for source in sources:
-            await add_job(scheduler, source, client, gen_api_token)
+            await add_job(scheduler, source, client, gen_api_token, vk_token)
         
 
 

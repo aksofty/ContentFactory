@@ -74,9 +74,8 @@ class LoaderRss(Loader):
                 body, 
                 enclosures=enclosures, 
                 id=post.link, 
-                prompt=source.ai_prompt.prompt, 
-                model=source.ai_prompt.ai_model.value, 
-                token=self.gen_api_token
+                source=source, 
+                gen_api_token=self.gen_api_token
             )
         
         tags = get_rss_tags(post)
