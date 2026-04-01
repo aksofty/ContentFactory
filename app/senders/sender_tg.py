@@ -2,7 +2,8 @@ from loguru import logger
 from app.cruds.source_cruds import get_source
 from app.cruds.target_cruds import get_target
 from app.database import AsyncSessionLocal
-from app.utils.common_utils import prepare_media_from_urls
+from app.utils import message
+from app.utils.common_utils import clear_medias_from_memory, prepare_media
 from app.utils.message import Message
 from . import Sender
 
@@ -29,11 +30,14 @@ class SenderTg(Sender):
                 'link_preview': False
             }
 
+            message.enclosures = [] if target.skip_media else message.enclosures
+
             if message.enclosures:
-                prepared_files = await prepare_media_from_urls(message.enclosures)
+                prepared_files = await prepare_media(message.enclosures, tg_download=False)
                 await self.client.send_file(**send_params, file=prepared_files, caption=message.text)
+                await clear_medias_from_memory(prepared_files)
             else:
-                await self.client.send_message(**send_params, text=message.text)
+                await self.client.send_message(**send_params, message=message.text)
             
             logger.info(f"+[TG] Сообщение отправлено в {target.channel}:{short_msg}")
 

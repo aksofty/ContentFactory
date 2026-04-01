@@ -14,6 +14,7 @@ class Target(Base):
 
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"), nullable=False)
     source: Mapped["Source"] = relationship("Source", foreign_keys=[source_id], lazy="selectin")
+    skip_media: Mapped[bool] =  mapped_column(nullable=True, default=False)
 
     __mapper_args__ = {
         "polymorphic_on": "type",

@@ -5,9 +5,9 @@ from telethon import TelegramClient
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app import LOG_PATH
 from app.config import Config
-from app.cruds.source_cruds import get_source, get_source_list
 from app.database import AsyncSessionLocal, engine
 from app.models.base import Base
+from app.app_config import AppConfig
 from app.utils.scheduler_utils import add_all_jobs
 from app.utils.tg_utils import tg_auth_qr
 
@@ -33,10 +33,17 @@ async def main():
     await tg_auth_qr(client, True)
     logger.info(f"Авторизация в Телеграм прошла успешно!")
 
-     
     scheduler = AsyncIOScheduler()
-    await add_all_jobs(
-        scheduler, client, Config.GEN_API_KEY, Config.VK_TOKEN)
+
+    app_config = AppConfig(
+        scheduler=scheduler,
+        client=client,
+        gen_api_token=Config.GEN_API_TOKEN,
+        vk_token=Config.VK_TOKEN
+    ) 
+
+    #await add_all_jobs(scheduler, client, Config.GEN_API_KEY, Config.VK_TOKEN)
+    await add_all_jobs(app_config)
     scheduler.start()
 
     try:

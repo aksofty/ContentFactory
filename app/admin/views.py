@@ -13,14 +13,14 @@ class TargetTgView(BaseViewFields):
     #list_columns = BaseView.list_columns + ['is_active']
 
     add_columns = edit_columns = [
-        'is_active', 'name', 'source', 'channel'
+        'is_active', 'name', 'source', 'channel', 'skip_media'
     ]
 class TargetVkView(BaseViewFields):
     datamodel = SQLAInterface(TargetVK) 
     #list_columns = BaseView.list_columns + ['is_active']
 
     add_columns = edit_columns = [
-        'is_active', 'name', 'source', 'channel'
+        'is_active', 'name', 'source', 'channel', 'skip_media'
     ]
    
 class SourceRssView(BaseViewFields):
@@ -35,7 +35,7 @@ class SourceTgView(BaseViewFields):
     datamodel = SQLAInterface(SourceTg) 
     #list_columns = ['is_active'] + BaseView.list_columns
     add_columns = edit_columns = [
-        'is_active', 'name', 'channel', 'cron', 'repost', 'drop_author', 'limit', 'allowed_filter', 'forbidden_filter', 'ai_prompt', 'last_message_id'
+        'is_active', 'name', 'channel', 'cron', 'limit', 'allowed_filter', 'forbidden_filter', 'ai_prompt', 'last_message_id'
     ]
 
 class FilterView(BaseViewFields):

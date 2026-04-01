@@ -1,9 +1,9 @@
 from . import LoaderTg, LoaderRss
 
 class LoaderFactory:
-    def __init__(self, tg_client, gen_api_token=None):
-        self.tg_client = tg_client
-        self.gen_api_token = gen_api_token
+    def __init__(self, app_config):
+        self.tg_client = app_config.client
+        self.gen_api_token = app_config.gen_api_token
         
     def get_loader(self, source):
         if source.type == 'tg':

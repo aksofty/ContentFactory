@@ -13,7 +13,7 @@ class Config:
     DB_NAME=os.getenv("DB_NAME", "db.sqlite3")
     LOG_FILE = os.getenv("LOG_FILE", "all_logs.log")
 
-    GEN_API_KEY=os.getenv("GEN_API_KEY", "")
+    GEN_API_TOKEN=os.getenv("GEN_API_TOKEN", "")
 
     ADMIN_NAME=os.getenv("ADMIN_NAME", "admin")
     ADMIN_PASS=os.getenv("ADMIN_PASS", "123456")
@@ -25,7 +25,7 @@ class Config:
             raise ValueError("Missing CLIENT_TOKEN or CLIENT_ID in environment variables")
         if not cls.VK_TOKEN:
             raise ValueError("Missing VK_TOKEN in environment variables")
-        if not cls.GEN_API_KEY:
-            raise ValueError("Missing GEN_API_KEY or GEN_API_MODEL in environment variables")   
+        if not cls.GEN_API_TOKEN:
+            raise ValueError("Missing GEN_API_TOKEN in environment variables")   
 
 Config.validate()
